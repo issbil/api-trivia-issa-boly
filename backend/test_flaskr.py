@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
 from models import setup_db, Question, Category
+from settings import DB_TEST_NAME,DB_USER, DB_PASSWORD, DB_HOST
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -14,10 +15,10 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
-        self.database_name = "trivia_test"
+        self.database_name = DB_TEST_NAME
         # self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         self.database_path = "postgresql://{}:{}@{}/{}".format(
-            "student", "student", "localhost:5432", self.database_name
+            DB_USER, DB_PASSWORD, DB_HOST, self.database_name
         )
         setup_db(self.app, self.database_path)
         
@@ -60,10 +61,10 @@ class TriviaTestCase(unittest.TestCase):
     def test_get_question_search_with_results(self):
         res = self.client().post("/questions", json={"searchTerm": "what is"})
         data = json.loads(res.data)
+        print(data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertTrue(data["total_questions"])
         self.assertEqual(len(data["questions"]), 2)
 
     def test_get_question_search_without_results(self):
@@ -114,22 +115,28 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "method not allowed")
 
     def test_get_quiz_without_category(self):
-        res = self.client().post("/quizzes", json={"previous_questions":[20, 21, 22] ,"quiz_category":{"type": "click", "id": 0}})
+        res = self.client().post("/quizzes", json={"previous_questions":[] ,"quiz_category":{"type": "click", "id": 0}})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(data["total_next_question"], 16)
         self.assertTrue(data["question"])
     
     def test_get_quiz_with_category(self):
-        res = self.client().post("/quizzes", json={"previous_questions":[10] ,"quiz_category":{"type": "Sports", "id": 6}})
+        res = self.client().post("/quizzes", json={"previous_questions":[] ,"quiz_category":{"type": "Sports", "id": 6}})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(data["total_next_question"], 1)
         self.assertTrue(data["question"])
+    
+    def test_get_quiz_without_result(self):
+        res = self.client().post("/quizzes", json={"previous_questions":[] ,"quiz_category":{"type": "Note esxist", "id": -1}})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(data["message"], 'unprocessable')
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

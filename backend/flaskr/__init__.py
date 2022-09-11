@@ -90,15 +90,15 @@ def create_app(test_config=None):
         for categorie in selection2:
             categories[categorie.id] = categorie.type
 
-        if len(current_questions) == 0:
+        if len(current_questions) == 0 or len(selection2) == 0:
             abort(404)
-
+            
         return jsonify(
             {
                 "success": True,
                 "questions": current_questions,
                 "total_questions": len(Question.query.all()),
-                "current_category":Category.query.get(4).type,
+                # "current_category":'History',
                 "categories": categories
             }
         )
@@ -172,7 +172,10 @@ def create_app(test_config=None):
                     }
                 )
             else:
-                
+                categories = Category.query.all()
+                if len(categories) == 0:
+                    abort(404)
+                    
                 question = Question(question=new_question, answer=new_answer, category=new_category, difficulty=new_difficulty)
                 question.insert()
 
@@ -249,29 +252,26 @@ def create_app(test_config=None):
         quiz_category= body.get("quiz_category", None)
         # print(body)
         try:
+            categories = Category.query.all()
+            if len(categories) == 0:
+              abort(404)
+              
             quiz_id = quiz_category["id"]
             if quiz_id == 0:
               selection = Question.query.filter(Question.id.not_in(previous_questions)).all()
             else:
               selection = Question.query.filter(Question.category==quiz_id , Question.id.not_in(previous_questions)).all()
             
-            if len(selection)>0:
-                question = random.choice(selection)
-                return jsonify(
-                {
-                    "success": True,
-                    "question": question.format(),
-                    "total_next_question": len(selection),
-                }
-                )
-            else :
-                return jsonify(
-                {
-                    "success": True,
-                    "message": "Sorry, no questions",
-                    "total_next_question": 0
-                }
-                )
+            if len(selection) == 0:
+                abort(404)
+            
+            question = random.choice(selection)
+            return jsonify(
+            {
+                "success": True,
+                "question": question.format()
+            }
+            )
         
         except:
             abort(422)

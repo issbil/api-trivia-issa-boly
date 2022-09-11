@@ -23,13 +23,17 @@ That's where you come in! Help them finish the trivia app so they can start hold
    1. psql -h localhost -p 5432 -U postgres -f setup.sql
    2. psql -h localhost -p 5432 -U postgres -d trivia -f trivia.psql
    3. psql -h localhost -p 5432 -U postgres -d trivia_test -f trivia.psql
+4. Create .env file in the /backend folder of the project with content:
+   1. DB_PASSWORD = 'student'
+   2. DB_NAME = 'trivia'
+   3. DB_USER = 'student'
    
-4. Execution (**Backend**)
+5. Execution (**Backend**)
     1. set FLASK_APP=flaskr
     2. set FLASK_DEBUG=true
     3. flask run
    
-5. Execution (**Frontend**)
+6. Execution (**Frontend**)
    1. Install Node JS
    2. cd frontend
    3. npm install

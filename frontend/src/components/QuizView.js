@@ -72,6 +72,13 @@ class QuizView extends Component {
         return;
       },
       error: (error) => {
+        console.log(error);
+        console.log(
+          JSON.stringify({
+            previous_questions: previousQuestions,
+            quiz_category: this.state.quizCategory,
+          })
+        );
         alert('Unable to load question. Please try your request again');
         return;
       },
@@ -79,6 +86,10 @@ class QuizView extends Component {
   };
 
   submitGuess = (event) => {
+    if (!this.state.currentQuestion.answer) {
+      alert('Unable to load Answer. No question selected');
+      return;
+    }
     event.preventDefault();
     let evaluate = this.evaluateAnswer();
     this.setState({
